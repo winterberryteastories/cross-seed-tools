@@ -8,6 +8,13 @@ pub(crate) struct RadarrMovieFile {
 }
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
+pub(crate) struct RadarrRelease {
+    #[serde(rename = "releaseTitle")]
+    pub release_title: String,
+    pub indexer: String,
+}
+
+#[derive(Serialize, Deserialize, Debug, Clone)]
 pub(crate) struct RadarrConnectWebhook {
     #[serde(rename = "downloadClient")]
     pub download_client: Option<String>,
@@ -19,4 +26,5 @@ pub(crate) struct RadarrConnectWebhook {
     pub movie_file: Option<RadarrMovieFile>,
     #[serde(rename = "sourcePath")]
     pub source_path: Option<String>,
+    pub release: Option<RadarrRelease>,
 }

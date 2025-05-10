@@ -1,6 +1,6 @@
 use std::sync::{Arc, RwLock};
 
-use log::{error, info, trace};
+use log::{error, info, trace, warn};
 
 use anyhow::{anyhow, Context};
 
@@ -9,6 +9,7 @@ use tokio::time::{sleep, Duration};
 use axum::{extract::State, http::StatusCode, response::IntoResponse, Json};
 
 use crate::cross_seed::{cross_seed_webhook, WebhookRequest};
+use crate::discord::discord_webhook;
 use crate::AppState;
 
 use crate::data_types::radarr::RadarrConnectWebhook;
@@ -37,7 +38,9 @@ async fn cross_seed_webhook_data(
                 .destination_path
                 .clone()
                 .context("No destination_path found")?;
-            if release.release_type == "SeasonPack" {
+            warn!("Release type: {}", release.release_type);
+            if release.release_type.to_lowercase() == "seasonpack" {
+                warn!("Release is a season pack, path: {destination_path}");
                 destination_path
             } else {
                 episode_files
@@ -166,6 +169,25 @@ async fn xseed(request: ArrConnectWebhook, state: Arc<RwLock<AppState>>) -> anyh
             .xseed_unique_ids
             .insert(unique_id);
         info!("[/xseed-*] cross-seed completed successfully.");
+
+        let release_title = match &request {
+            ArrConnectWebhook::Sonarr(request) => request.release.clone().unwrap().release_title,
+            ArrConnectWebhook::Radarr(request) => request.release.clone().unwrap().release_title,
+        };
+
+        let discord_webhook_url = {
+            let read_guard = state
+                .read()
+                .map_err(|_| anyhow!("Could not read from state."))?;
+
+            read_guard.discord_webhook_url.clone()
+        };
+
+        if let Some(discord_webhook_url) = discord_webhook_url {
+            let content = format!("[/xseed-*] cross-seed completed successfully ({release_title})");
+            discord_webhook(&discord_webhook_url, &content).await?;
+        }
+
         Ok(())
     } else {
         info!("[/xseed-*] cross-seed failed with status code: {resp}");

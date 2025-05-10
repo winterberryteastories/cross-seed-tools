@@ -1,6 +1,6 @@
 use std::sync::{Arc, RwLock};
 
-use log::{error, info};
+use log::{error, info, warn};
 
 use serde::{Deserialize, Serialize};
 
@@ -76,7 +76,7 @@ async fn do_announce(state: Arc<RwLock<AppState>>, announce: Announce) -> anyhow
                 any_success = true;
             }
         } else {
-            info!("[/announce] Error returned from cross-seed seedbox API");
+            warn!("[/announce] Error returned from cross-seed seedbox API");
         }
     }
 
@@ -96,7 +96,7 @@ async fn do_announce(state: Arc<RwLock<AppState>>, announce: Announce) -> anyhow
                 any_success = true;
             }
         } else {
-            info!("[/announce] Error returned from cross-seed seedbox API");
+            warn!("[/announce] Error returned from cross-seed seedbox API");
         }
     }
 

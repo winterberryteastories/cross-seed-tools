@@ -19,6 +19,7 @@ mod data_types;
 mod announce;
 mod inject_seedbox_torrents;
 mod xseed;
+mod discord;
 
 mod cross_seed;
 
@@ -53,6 +54,8 @@ pub struct AppState {
 
     qbittorrent_local_dir: Option<String>,
     qbittorrent_seedbox_name: Option<String>,
+
+    discord_webhook_url: Option<String>,
 }
 
 // Middleware for authentication
@@ -118,6 +121,8 @@ fn create_config_state() -> anyhow::Result<Arc<RwLock<AppState>>> {
 
         qbittorrent_local_dir: env::var("QBITTORRENT_LOCAL_DIR").ok(),
         qbittorrent_seedbox_host: env::var("QBITTORRENT_SEEDBOX_HOST").ok(),
+
+        discord_webhook_url: env::var("DISCORD_WEBHOOK_URL").ok(),
     }));
     Ok(state)
 }
